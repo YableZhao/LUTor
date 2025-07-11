@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LUTor - AI风格转换</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .drag-over {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+        .image-preview {
+            max-width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+        }
+        .loading-spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">🎨 LUTor</h1>
+            <p class="text-gray-600">AI风格转换工具 - 轻松创建专业级照片效果</p>
+        </div>
+
+        <!-- Main Content -->
+        <div class="max-w-6xl mx-auto">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                
+                <!-- Left Panel - Upload & Controls -->
+                <div class="space-y-6">
+                    
+                    <!-- Content Image Upload -->
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h2 class="text-xl font-semibold mb-4">📸 上传你的照片</h2>
+                        <div id="content-dropzone" class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-blue-400 transition-colors">
+                            <div id="content-upload-prompt">
+                                <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+                                <p class="text-gray-600 mb-2">拖拽图片到这里或点击上传</p>
+                                <p class="text-sm text-gray-500">支持 JPG, PNG, GIF 格式</p>
+                            </div>
+                            <img id="content-preview" class="image-preview mx-auto hidden" alt="Content preview">
+                        </div>
+                        <input type="file" id="content-file" accept="image/*" class="hidden">
+                    </div>
+
+                    <!-- Style Selection -->
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h2 class="text-xl font-semibold mb-4">🎭 选择风格</h2>
+                        
+                        <!-- Preset Styles -->
+                        <div class="mb-6">
+                            <h3 class="text-lg font-medium mb-3">预设风格</h3>
+                            <div class="grid grid-cols-2 gap-3">
+                                <button class="preset-style-btn p-3 border rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors" data-style="warm">
+                                    <div class="w-full h-20 bg-gradient-to-r from-orange-400 to-red-500 rounded mb-2"></div>
+                                    <p class="text-sm font-medium">温暖日落</p>
+                                </button>
+                                <button class="preset-style-btn p-3 border rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors" data-style="cool">
+                                    <div class="w-full h-20 bg-gradient-to-r from-blue-400 to-cyan-500 rounded mb-2"></div>
+                                    <p class="text-sm font-medium">清凉海洋</p>
+                                </button>
+                                <button class="preset-style-btn p-3 border rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors" data-style="vintage">
+                                    <div class="w-full h-20 bg-gradient-to-r from-yellow-600 to-orange-700 rounded mb-2"></div>
+                                    <p class="text-sm font-medium">复古胶片</p>
+                                </button>
+                                <button class="preset-style-btn p-3 border rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors" data-style="pastel">
+                                    <div class="w-full h-20 bg-gradient-to-r from-pink-200 to-purple-300 rounded mb-2"></div>
+                                    <p class="text-sm font-medium">柔和色彩</p>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Custom Style Upload -->
+                        <div class="border-t pt-6">
+                            <h3 class="text-lg font-medium mb-3">自定义风格</h3>
+                            <div id="style-dropzone" class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-blue-400 transition-colors">
+                                <div id="style-upload-prompt">
+                                    <i class="fas fa-image text-2xl text-gray-400 mb-2"></i>
+                                    <p class="text-gray-600 text-sm">上传风格参考图片</p>
+                                </div>
+                                <img id="style-preview" class="image-preview mx-auto hidden h-24" alt="Style preview">
+                            </div>
+                            <input type="file" id="style-file" accept="image/*" class="hidden">
+                        </div>
+                    </div>
+
+                    <!-- Controls -->
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h2 class="text-xl font-semibold mb-4">⚙️ 控制参数</h2>
+                        
+                        <!-- Strength Slider -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">风格强度</label>
+                            <input type="range" id="strength-slider" min="0" max="2" step="0.1" value="1.0" class="w-full">
+                            <div class="flex justify-between text-sm text-gray-500 mt-1">
+                                <span>0.0</span>
+                                <span id="strength-value">1.0</span>
+                                <span>2.0</span>
+                            </div>
+                        </div>
+
+                        <!-- Process Button -->
+                        <button id="process-btn" class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed">
+                            <i class="fas fa-magic mr-2"></i>
+                            开始转换
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Panel - Results -->
+                <div class="space-y-6">
+                    
+                    <!-- Result Display -->
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h2 class="text-xl font-semibold mb-4">✨ 转换结果</h2>
+                        
+                        <div id="result-container" class="text-center">
+                            <div id="loading-state" class="hidden">
+                                <div class="loading-spinner mx-auto mb-4"></div>
+                                <p class="text-gray-600">正在处理中...</p>
+                            </div>
+                            
+                            <div id="result-placeholder" class="border-2 border-dashed border-gray-300 rounded-lg p-8">
+                                <i class="fas fa-image text-4xl text-gray-400 mb-4"></i>
+                                <p class="text-gray-600">转换结果将显示在这里</p>
+                            </div>
+                            
+                            <img id="result-image" class="image-preview mx-auto hidden rounded-lg" alt="Result">
+                        </div>
+                    </div>
+
+                    <!-- Export Options -->
+                    <div id="export-section" class="bg-white rounded-lg shadow-md p-6 hidden">
+                        <h2 class="text-xl font-semibold mb-4">💾 导出选项</h2>
+                        
+                        <div class="space-y-3">
+                            <button id="download-image" class="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors">
+                                <i class="fas fa-download mr-2"></i>
+                                下载图片
+                            </button>
+                            
+                            <button id="export-lut" class="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors">
+                                <i class="fas fa-cube mr-2"></i>
+                                导出 3D LUT (.cube)
+                            </button>
+                            
+                            <button id="export-xmp" class="w-full bg-orange-600 text-white py-2 px-4 rounded-lg hover:bg-orange-700 transition-colors">
+                                <i class="fas fa-file-code mr-2"></i>
+                                导出 Lightroom 预设 (.xmp)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Info Panel -->
+                    <div class="bg-blue-50 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold text-blue-800 mb-3">💡 使用说明</h3>
+                        <ul class="text-sm text-blue-700 space-y-2">
+                            <li>• 上传你想要转换的照片</li>
+                            <li>• 选择预设风格或上传自定义风格图片</li>
+                            <li>• 调整风格强度参数</li>
+                            <li>• 点击"开始转换"按钮</li>
+                            <li>• 下载结果图片或导出LUT/预设文件</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

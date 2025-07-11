@@ -1,0 +1,89 @@
+/Users/yable/Projects/lutor/venv/lib/python3.13/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/Users/yable/Projects/lutor/venv/lib/python3.13/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=VGG19_Weights.IMAGENET1K_V1`. You can also use `weights=VGG19_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Initializing LUTor model on mps
+Model initialized successfully
+🎨 Starting LUTor Web Application...
+📱 Open http://localhost:5001 in your browser
+ * Serving Flask app 'web_app'
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5001
+[33mPress CTRL+C to quit[0m
+ * Restarting with stat
+/Users/yable/Projects/lutor/venv/lib/python3.13/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/Users/yable/Projects/lutor/venv/lib/python3.13/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=VGG19_Weights.IMAGENET1K_V1`. You can also use `weights=VGG19_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+ * Debugger is active!
+ * Debugger PIN: 183-080-178
+127.0.0.1 - - [11/Jul/2025 15:23:11] "HEAD / HTTP/1.1" 200 -
+127.0.0.1 - - [11/Jul/2025 16:57:06] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [11/Jul/2025 16:57:06] "GET /static/app.js HTTP/1.1" 200 -
+127.0.0.1 - - [11/Jul/2025 16:57:09] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+127.0.0.1 - - [11/Jul/2025 16:59:15] "POST /api/upload HTTP/1.1" 200 -
+127.0.0.1 - - [11/Jul/2025 16:59:18] "POST /api/upload HTTP/1.1" 200 -
+127.0.0.1 - - [11/Jul/2025 16:59:21] "POST /api/style_transfer HTTP/1.1" 200 -
+127.0.0.1 - - [11/Jul/2025 16:59:27] "POST /api/style_transfer HTTP/1.1" 200 -
+127.0.0.1 - - [11/Jul/2025 17:00:15] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [11/Jul/2025 17:00:15] "GET /static/app.js HTTP/1.1" 200 -
+127.0.0.1 - - [11/Jul/2025 17:00:33] "POST /api/upload HTTP/1.1" 200 -
+127.0.0.1 - - [11/Jul/2025 17:00:36] "POST /api/style_transfer HTTP/1.1" 200 -
+ * Detected change in '/Users/yable/Projects/lutor/utils/image_utils.py', reloading
+Initializing LUTor model on mps
+Model initialized successfully
+🎨 Starting LUTor Web Application...
+📱 Open http://localhost:5001 in your browser
+ * Restarting with stat
+/Users/yable/Projects/lutor/venv/lib/python3.13/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/Users/yable/Projects/lutor/venv/lib/python3.13/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=VGG19_Weights.IMAGENET1K_V1`. You can also use `weights=VGG19_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+ * Debugger is active!
+ * Debugger PIN: 183-080-178
+127.0.0.1 - - [11/Jul/2025 17:02:48] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [11/Jul/2025 17:02:48] "[36mGET /static/app.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [11/Jul/2025 17:02:49] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+127.0.0.1 - - [11/Jul/2025 17:02:53] "POST /api/upload HTTP/1.1" 200 -
+127.0.0.1 - - [11/Jul/2025 17:02:57] "POST /api/upload HTTP/1.1" 200 -
+127.0.0.1 - - [11/Jul/2025 17:03:01] "POST /api/style_transfer HTTP/1.1" 200 -
+127.0.0.1 - - [11/Jul/2025 17:04:18] "POST /api/generate_preset_style HTTP/1.1" 200 -
+127.0.0.1 - - [11/Jul/2025 17:04:19] "POST /api/generate_preset_style HTTP/1.1" 200 -
+127.0.0.1 - - [11/Jul/2025 17:04:20] "POST /api/generate_preset_style HTTP/1.1" 200 -
+127.0.0.1 - - [11/Jul/2025 17:04:23] "POST /api/style_transfer HTTP/1.1" 200 -
+127.0.0.1 - - [11/Jul/2025 17:04:26] "POST /api/style_transfer HTTP/1.1" 200 -
+127.0.0.1 - - [11/Jul/2025 17:04:28] "POST /api/style_transfer HTTP/1.1" 200 -
+127.0.0.1 - - [11/Jul/2025 17:05:23] "POST /api/export_lut HTTP/1.1" 200 -
+127.0.0.1 - - [11/Jul/2025 17:05:26] "POST /api/export_lut HTTP/1.1" 200 -
+ * Detected change in '/Users/yable/Projects/lutor/models/adain_model.py', reloading
+Initializing LUTor model on mps
+Model initialized successfully
+🎨 Starting LUTor Web Application...
+📱 Open http://localhost:5001 in your browser
+ * Restarting with stat
+/Users/yable/Projects/lutor/venv/lib/python3.13/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/Users/yable/Projects/lutor/venv/lib/python3.13/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=VGG19_Weights.IMAGENET1K_V1`. You can also use `weights=VGG19_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Initializing LUTor model on mps
+Loading decoder weights from weights/decoder.pth
+Traceback (most recent call last):
+  File "/Users/yable/Projects/lutor/web_app.py", line 321, in <module>
+    init_model()
+    ~~~~~~~~~~^^
+  File "/Users/yable/Projects/lutor/web_app.py", line 57, in init_model
+    model = AdaINStyleTransfer(device=device)
+  File "/Users/yable/Projects/lutor/models/adain_model.py", line 127, in __init__
+    self._load_decoder_weights()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/yable/Projects/lutor/models/adain_model.py", line 136, in _load_decoder_weights
+    self.decoder.load_state_dict(torch.load(decoder_path))
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yable/Projects/lutor/venv/lib/python3.13/site-packages/torch/nn/modules/module.py", line 2593, in load_state_dict
+    raise RuntimeError(
+    ...<3 lines>...
+    )
+RuntimeError: Error(s) in loading state_dict for AdaINDecoder:
+	Missing key(s) in state_dict: "decoder.1.weight", "decoder.1.bias", "decoder.5.weight", "decoder.5.bias", "decoder.8.weight", "decoder.8.bias", "decoder.11.weight", "decoder.11.bias", "decoder.14.weight", "decoder.14.bias", "decoder.18.weight", "decoder.18.bias", "decoder.21.weight", "decoder.21.bias", "decoder.25.weight", "decoder.25.bias", "decoder.28.weight", "decoder.28.bias". 
+	Unexpected key(s) in state_dict: "1.weight", "1.bias", "5.weight", "5.bias", "8.weight", "8.bias", "11.weight", "11.bias", "14.weight", "14.bias", "18.weight", "18.bias", "21.weight", "21.bias", "25.weight", "25.bias", "28.weight", "28.bias". 
