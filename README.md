@@ -4,7 +4,6 @@
 
 The application also allows you to export the resulting color transformation as a **3D LUT** (`.cube`) for use in video editing software (like DaVinci Resolve, Premiere Pro) or as a **Lightroom Preset** (`.xmp`) for your photo editing workflow.
 
-![Demo Screenshot](https://i.imgur.com/your-screenshot.jpg)  <!-- It's recommended to replace this with a real screenshot of your app -->
 
 ## Features
 
