@@ -1,0 +1,222 @@
+/* --- Global Resets & Typography --- */
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f8f9fa;
+    color: #212529;
+    margin: 0;
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+/* --- App Layout & Header --- */
+.container {
+    width: 100%;
+    max-width: 1400px;
+}
+
+.app-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.logo {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.tagline {
+    font-size: 1.1rem;
+    color: #6c757d;
+    margin-top: 0.25rem;
+}
+
+.app-main {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2rem;
+}
+
+/* --- Panel Styling --- */
+.panel {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+}
+
+.panel-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 0.25rem 0;
+}
+
+.panel-description {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin: 0 0 1.5rem 0;
+    flex-shrink: 0;
+}
+
+/* --- Upload Zones --- */
+.upload-zone {
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    position: relative;
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 250px;
+}
+
+.upload-zone.drag-over {
+    border-color: #0d6efd;
+    background-color: #e7f1ff;
+}
+
+.upload-placeholder {
+    color: #6c757d;
+    pointer-events: none; /* Allows clicks to pass through to the zone */
+}
+
+.upload-icon {
+    width: 48px;
+    height: 48px;
+    color: #ced4da;
+    margin-bottom: 1rem;
+}
+
+.image-preview {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 0.5rem;
+    box-sizing: border-box;
+    border-radius: 8px;
+    display: none; /* Initially hidden */
+}
+
+.file-input {
+    display: none;
+}
+
+/* --- Preset Styles --- */
+.preset-styles {
+    margin-top: 1.5rem;
+}
+.presets-title {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 0.75rem;
+}
+#preset-styles-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 0.75rem;
+}
+.preset-button {
+    border: 1px solid #dee2e6;
+    background-color: #fff;
+    border-radius: 6px;
+    padding: 0.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.8rem;
+}
+.preset-button:hover {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+}
+.preset-button img {
+    width: 100%;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+.preset-button.active {
+    border-color: #0d6efd;
+    background-color: #e7f1ff;
+    font-weight: 600;
+}
+
+/* --- Controls & Export --- */
+.controls-and-export {
+    margin-top: 1.5rem;
+}
+.strength-slider {
+    margin-bottom: 1.5rem;
+}
+.strength-slider label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 0.75rem;
+}
+#strength-slider-input {
+    width: 100%;
+    cursor: pointer;
+}
+#strength-value {
+    font-weight: 500;
+    float: right;
+}
+
+.export-buttons {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+}
+
+.export-button {
+    background-color: #0d6efd;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.2s ease;
+}
+
+.export-button:hover:not(:disabled) {
+    background-color: #0b5ed7;
+}
+
+.export-button:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+    body {
+        padding: 1rem;
+    }
+    .app-main {
+        gap: 1.5rem;
+    }
+    .panel {
+        padding: 1rem 1.25rem;
+    }
+} 

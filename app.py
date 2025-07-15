@@ -182,11 +182,11 @@ def export_xmp():
 def get_preset_styles():
     """Returns a list of available preset styles."""
     preset_styles = [
-        {'name': 'Warm Sunset', 'id': 'warm', 'description': 'Warm orange and yellow tones'},
-        {'name': 'Cool Ocean', 'id': 'cool', 'description': 'Cool blue and cyan tones'},
-        {'name': 'Vintage Film', 'id': 'vintage', 'description': 'Classic film look'},
-        {'name': 'High Contrast', 'id': 'contrast', 'description': 'Bold black and white'},
-        {'name': 'Soft Pastel', 'id': 'pastel', 'description': 'Gentle pastel colors'},
+        {'name': 'Warm Sunset', 'id': 'warm', 'description': 'Rich orange and yellow tones'},
+        {'name': 'Cool Ocean', 'id': 'cool', 'description': 'Deep blue and cyan tones'},
+        {'name': 'Vintage Film', 'id': 'vintage', 'description': 'Classic, faded film look'},
+        {'name': 'High Contrast B&W', 'id': 'contrast', 'description': 'Bold black and white'},
+        {'name': 'Soft Pastel', 'id': 'pastel', 'description': 'Gentle and light pastel colors'},
     ]
     return jsonify({'styles': preset_styles})
 

@@ -1,420 +1,293 @@
 // LUTor Web App JavaScript
 
-class LUTorApp {
-    constructor() {
-        this.contentImage = null;
-        this.styleImage = null;
-        this.resultImage = null;
-        this.init();
+document.addEventListener('DOMContentLoaded', () => {
+    // --- STATE MANAGEMENT ---
+    let contentImageB64 = null;
+    let styleImageB64 = null;
+    let resultImageB64 = null;
+    let activePresetButton = null;
+
+    // --- DOM ELEMENTS ---
+    const contentUploadZone = document.getElementById('content-upload-zone');
+    const contentFileInput = document.getElementById('content-file-input');
+    const contentImagePreview = document.getElementById('content-image-preview');
+
+    const styleUploadZone = document.getElementById('style-upload-zone');
+    const styleFileInput = document.getElementById('style-file-input');
+    const styleImagePreview = document.getElementById('style-image-preview');
+    const presetsContainer = document.getElementById('preset-styles-container');
+
+    const resultZone = document.getElementById('result-zone');
+    const resultImagePreview = document.getElementById('result-image-preview');
+    const resultPlaceholder = resultZone.querySelector('.upload-placeholder');
+    
+    const strengthSlider = document.getElementById('strength-slider-input');
+    const strengthValueSpan = document.getElementById('strength-value');
+
+    const exportJpgButton = document.getElementById('export-jpg-button');
+    const exportLutButton = document.getElementById('export-lut-button');
+    const exportXmpButton = document.getElementById('export-xmp-button');
+
+    // --- INITIALIZATION ---
+    fetchPresetStyles();
+    setupEventListeners();
+
+    // --- EVENT LISTENERS SETUP ---
+    function setupEventListeners() {
+        // Drag and Drop
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            document.body.addEventListener(eventName, preventDefaults, false);
+            contentUploadZone.addEventListener(eventName, handleDragEvent, false);
+            styleUploadZone.addEventListener(eventName, handleDragEvent, false);
+        });
+
+        // Click to Upload
+        contentUploadZone.addEventListener('click', () => contentFileInput.click());
+        styleUploadZone.addEventListener('click', () => styleFileInput.click());
+        contentFileInput.addEventListener('change', (e) => handleFileSelect(e, 'content'));
+        styleFileInput.addEventListener('change', (e) => handleFileSelect(e, 'style'));
+
+        // Strength Slider
+        strengthSlider.addEventListener('input', handleStrengthChange);
+        strengthSlider.addEventListener('change', processImages); // Re-process on final change
+
+        // Export Buttons
+        exportJpgButton.addEventListener('click', downloadJpg);
+        exportLutButton.addEventListener('click', exportFile.bind(null, 'lut'));
+        exportXmpButton.addEventListener('click', exportFile.bind(null, 'xmp'));
     }
 
-    init() {
-        this.setupEventListeners();
-        this.setupDragAndDrop();
-    }
+    // --- CORE LOGIC ---
+    function processImages() {
+        if (!contentImageB64 || !styleImageB64) {
+            return;
+        }
+        
+        showProcessingState(resultZone, true);
 
-    setupEventListeners() {
-        // File inputs
-        document.getElementById('content-file').addEventListener('change', (e) => {
-            this.handleContentUpload(e.target.files[0]);
-        });
+        const payload = {
+            content_image: contentImageB64,
+            style_image: styleImageB64,
+            strength: parseFloat(strengthSlider.value)
+        };
 
-        document.getElementById('style-file').addEventListener('change', (e) => {
-            this.handleStyleUpload(e.target.files[0]);
-        });
-
-        // Dropzone clicks
-        document.getElementById('content-dropzone').addEventListener('click', () => {
-            document.getElementById('content-file').click();
-        });
-
-        document.getElementById('style-dropzone').addEventListener('click', () => {
-            document.getElementById('style-file').click();
-        });
-
-        // Preset style buttons
-        document.querySelectorAll('.preset-style-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                this.selectPresetStyle(e.currentTarget.dataset.style);
-            });
-        });
-
-        // Strength slider
-        const strengthSlider = document.getElementById('strength-slider');
-        const strengthValue = document.getElementById('strength-value');
-        strengthSlider.addEventListener('input', (e) => {
-            strengthValue.textContent = e.target.value;
-        });
-
-        // Process button
-        document.getElementById('process-btn').addEventListener('click', () => {
-            this.processStyleTransfer();
-        });
-
-        // Export buttons
-        document.getElementById('download-image').addEventListener('click', () => {
-            this.downloadImage();
-        });
-
-        document.getElementById('export-lut').addEventListener('click', () => {
-            this.exportLUT();
-        });
-
-        document.getElementById('export-xmp').addEventListener('click', () => {
-            this.exportXMP();
+        fetch('/api/style_transfer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                resultImageB64 = data.stylized_image;
+                displayImage(resultImagePreview, resultImageB64);
+                resultPlaceholder.style.display = 'none';
+                enableExportButtons(true);
+            } else {
+                throw new Error(data.error || 'An unknown error occurred.');
+            }
+        })
+        .catch(error => {
+            console.error('Style Transfer Error:', error);
+            alert(`Error during processing: ${error.message}`);
+            enableExportButtons(false);
+        })
+        .finally(() => {
+            showProcessingState(resultZone, false);
         });
     }
 
-    setupDragAndDrop() {
-        // Content dropzone
-        const contentDropzone = document.getElementById('content-dropzone');
-        this.setupDropzone(contentDropzone, (file) => {
-            this.handleContentUpload(file);
-        });
-
-        // Style dropzone
-        const styleDropzone = document.getElementById('style-dropzone');
-        this.setupDropzone(styleDropzone, (file) => {
-            this.handleStyleUpload(file);
-        });
+    function handleStrengthChange() {
+        strengthValueSpan.textContent = parseFloat(strengthSlider.value).toFixed(2);
+    }
+    
+    // --- PRESET HANDLING ---
+    function fetchPresetStyles() {
+        fetch('/api/preset_styles')
+            .then(response => response.json())
+            .then(data => {
+                if (data.styles) {
+                    renderPresetStyles(data.styles);
+                }
+            })
+            .catch(error => console.error('Error fetching presets:', error));
     }
 
-    setupDropzone(element, callback) {
-        element.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            element.classList.add('drag-over');
-        });
-
-        element.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            element.classList.remove('drag-over');
-        });
-
-        element.addEventListener('drop', (e) => {
-            e.preventDefault();
-            element.classList.remove('drag-over');
+    function renderPresetStyles(styles) {
+        // Skip the title we added in HTML
+        presetsContainer.innerHTML = '<p class="presets-title">Or use a preset:</p>';
+        styles.forEach(style => {
+            const button = document.createElement('button');
+            button.className = 'preset-button';
+            button.dataset.styleId = style.id;
             
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                callback(files[0]);
+            const img = document.createElement('img');
+            img.src = `https://dummyimage.com/100x60/f0f0f0/aaa.png&text=${style.name}`; // Placeholder
+            img.alt = style.description;
+            button.appendChild(img);
+            
+            const name = document.createElement('span');
+            name.textContent = style.name;
+            button.appendChild(name);
+
+            button.addEventListener('click', () => handlePresetClick(style.id, button));
+            presetsContainer.appendChild(button);
+            
+            // Generate and set the actual style image
+            generateAndSetPresetImage(style.id, img);
+        });
+    }
+
+    function generateAndSetPresetImage(styleId, imgElement) {
+        fetch('/api/generate_preset_style', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ style_id: styleId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                imgElement.src = data.style_image;
             }
         });
     }
 
-    async handleContentUpload(file) {
-        if (!this.isValidImageFile(file)) {
-            this.showError('请选择有效的图片文件');
+    function handlePresetClick(styleId, buttonElement) {
+        showProcessingState(styleUploadZone, true);
+        
+        fetch('/api/generate_preset_style', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ style_id: styleId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                styleImageB64 = data.style_image;
+                displayImage(styleImagePreview, styleImageB64);
+                if (activePresetButton) {
+                    activePresetButton.classList.remove('active');
+                }
+                buttonElement.classList.add('active');
+                activePresetButton = buttonElement;
+                processImages();
+            } else {
+                throw new Error(data.error);
+            }
+        })
+        .catch(error => alert(`Error selecting preset: ${error.message}`))
+        .finally(() => showProcessingState(styleUploadZone, false));
+    }
+
+
+    // --- FILE HANDLING & UI UPDATES ---
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    function handleDragEvent(e) {
+        const zone = e.currentTarget;
+        if (e.type === 'dragenter' || e.type === 'dragover') {
+            zone.classList.add('drag-over');
+        } else if (e.type === 'dragleave' || e.type === 'drop') {
+            zone.classList.remove('drag-over');
+        }
+        if (e.type === 'drop') {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            const uploadType = zone.id.startsWith('content') ? 'content' : 'style';
+            handleFile(files[0], uploadType);
+        }
+    }
+
+    function handleFileSelect(e, uploadType) {
+        handleFile(e.target.files[0], uploadType);
+    }
+    
+    function handleFile(file, uploadType) {
+        if (!file || !file.type.startsWith('image/')) {
+            alert('Please select an image file.');
             return;
         }
 
-        try {
-            this.showLoading('content-dropzone');
-            
-            const formData = new FormData();
-            formData.append('file', file);
-
-            const response = await fetch('/api/upload', {
-                method: 'POST',
-                body: formData
-            });
-
-            const result = await response.json();
-            
-            if (result.success) {
-                this.contentImage = result.image;
-                this.displayContentImage(result.image);
-                this.updateProcessButton();
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            if (uploadType === 'content') {
+                contentImageB64 = e.target.result;
+                displayImage(contentImagePreview, contentImageB64);
             } else {
-                this.showError(result.error);
+                styleImageB64 = e.target.result;
+                displayImage(styleImagePreview, styleImageB64);
+                if (activePresetButton) {
+                    activePresetButton.classList.remove('active');
+                    activePresetButton = null;
+                }
             }
-        } catch (error) {
-            this.showError('上传失败: ' + error.message);
-        }
+            processImages();
+        };
+        reader.readAsDataURL(file);
     }
 
-    async handleStyleUpload(file) {
-        if (!this.isValidImageFile(file)) {
-            this.showError('请选择有效的图片文件');
-            return;
-        }
-
-        try {
-            this.showLoading('style-dropzone');
-            
-            const formData = new FormData();
-            formData.append('file', file);
-
-            const response = await fetch('/api/upload', {
-                method: 'POST',
-                body: formData
-            });
-
-            const result = await response.json();
-            
-            if (result.success) {
-                this.styleImage = result.image;
-                this.displayStyleImage(result.image);
-                this.updateProcessButton();
-                this.clearPresetSelection();
-            } else {
-                this.showError(result.error);
-            }
-        } catch (error) {
-            this.showError('上传失败: ' + error.message);
-        }
+    function displayImage(element, b64) {
+        element.src = b64;
+        element.style.display = 'block';
+        element.parentElement.querySelector('.upload-placeholder').style.display = 'none';
     }
 
-    async selectPresetStyle(styleId) {
-        try {
-            // Clear custom style
-            this.clearStyleImage();
-            
-            // Highlight selected preset
-            document.querySelectorAll('.preset-style-btn').forEach(btn => {
-                btn.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50');
-            });
-            
-            const selectedBtn = document.querySelector(`[data-style="${styleId}"]`);
-            selectedBtn.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50');
-
-            // Generate preset style
-            const response = await fetch('/api/generate_preset_style', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ style_id: styleId })
-            });
-
-            const result = await response.json();
-            
-            if (result.success) {
-                this.styleImage = result.style_image;
-                this.displayStyleImage(result.style_image);
-                this.updateProcessButton();
-            } else {
-                this.showError(result.error);
-            }
-        } catch (error) {
-            this.showError('生成预设风格失败: ' + error.message);
-        }
+    function showProcessingState(zone, isLoading) {
+        // Simple opacity change to indicate loading
+        zone.style.opacity = isLoading ? 0.5 : 1.0;
+        zone.style.pointerEvents = isLoading ? 'none' : 'auto';
     }
 
-    async processStyleTransfer() {
-        if (!this.contentImage || !this.styleImage) {
-            this.showError('请先上传内容图片和选择风格');
-            return;
-        }
-
-        try {
-            this.showProcessing();
-            
-            const strength = document.getElementById('strength-slider').value;
-            
-            const response = await fetch('/api/style_transfer', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    content_image: this.contentImage,
-                    style_image: this.styleImage,
-                    strength: parseFloat(strength)
-                })
-            });
-
-            const result = await response.json();
-            
-            if (result.success) {
-                this.resultImage = result.stylized_image;
-                this.displayResult(result.stylized_image);
-                this.showExportOptions();
-            } else {
-                this.showError(result.error);
-            }
-        } catch (error) {
-            this.showError('处理失败: ' + error.message);
-        } finally {
-            this.hideProcessing();
-        }
-    }
-
-    displayContentImage(imageData) {
-        const preview = document.getElementById('content-preview');
-        const prompt = document.getElementById('content-upload-prompt');
-        
-        preview.src = imageData;
-        preview.classList.remove('hidden');
-        prompt.classList.add('hidden');
-    }
-
-    displayStyleImage(imageData) {
-        const preview = document.getElementById('style-preview');
-        const prompt = document.getElementById('style-upload-prompt');
-        
-        preview.src = imageData;
-        preview.classList.remove('hidden');
-        prompt.classList.add('hidden');
-    }
-
-    displayResult(imageData) {
-        const resultImage = document.getElementById('result-image');
-        const placeholder = document.getElementById('result-placeholder');
-        
-        resultImage.src = imageData;
-        resultImage.classList.remove('hidden');
-        placeholder.classList.add('hidden');
-    }
-
-    clearStyleImage() {
-        const preview = document.getElementById('style-preview');
-        const prompt = document.getElementById('style-upload-prompt');
-        
-        preview.classList.add('hidden');
-        prompt.classList.remove('hidden');
-        this.styleImage = null;
-    }
-
-    clearPresetSelection() {
-        document.querySelectorAll('.preset-style-btn').forEach(btn => {
-            btn.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50');
+    function enableExportButtons(enabled) {
+        [exportJpgButton, exportLutButton, exportXmpButton].forEach(button => {
+            button.disabled = !enabled;
         });
     }
 
-    updateProcessButton() {
-        const processBtn = document.getElementById('process-btn');
-        const canProcess = this.contentImage && this.styleImage;
-        
-        processBtn.disabled = !canProcess;
-        processBtn.classList.toggle('bg-blue-600', canProcess);
-        processBtn.classList.toggle('hover:bg-blue-700', canProcess);
-        processBtn.classList.toggle('bg-gray-400', !canProcess);
-    }
-
-    showProcessing() {
-        document.getElementById('loading-state').classList.remove('hidden');
-        document.getElementById('result-placeholder').classList.add('hidden');
-        document.getElementById('result-image').classList.add('hidden');
-        document.getElementById('process-btn').disabled = true;
-    }
-
-    hideProcessing() {
-        document.getElementById('loading-state').classList.add('hidden');
-        document.getElementById('process-btn').disabled = false;
-        this.updateProcessButton();
-    }
-
-    showExportOptions() {
-        document.getElementById('export-section').classList.remove('hidden');
-    }
-
-    showLoading(elementId) {
-        // Could add loading indicators to specific elements
-    }
-
-    downloadImage() {
-        if (!this.resultImage) {
-            this.showError('没有可下载的图片');
-            return;
-        }
-
-        // Create download link
+    // --- EXPORT FUNCTIONS ---
+    function downloadJpg() {
+        if (!resultImageB64) return;
         const link = document.createElement('a');
-        link.href = this.resultImage;
-        link.download = 'lutor_stylized_image.jpg';
+        link.href = resultImageB64;
+        link.download = 'stylized_image.jpg';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
     }
-
-    async exportLUT() {
-        if (!this.contentImage || !this.resultImage) {
-            this.showError('没有可导出的内容');
-            return;
-        }
-
-        try {
-            const response = await fetch('/api/export_lut', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    original_image: this.contentImage,
-                    stylized_image: this.resultImage
-                })
-            });
-
-            if (response.ok) {
-                // Trigger download
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = 'lutor_style_transfer.cube';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                window.URL.revokeObjectURL(url);
-            } else {
-                const result = await response.json();
-                this.showError(result.error);
-            }
-        } catch (error) {
-            this.showError('导出 LUT 失败: ' + error.message);
-        }
+    
+    function exportFile(format) {
+        if (!contentImageB64 || !resultImageB64) return;
+        
+        const payload = {
+            original_image: contentImageB64,
+            stylized_image: resultImageB64,
+        };
+        
+        fetch(`/api/export_${format}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        })
+        .then(response => {
+            if (!response.ok) throw new Error(`Network response was not ok, status: ${response.status}`);
+            return response.blob();
+        })
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `lutor_style.${format === 'lut' ? 'cube' : 'xmp'}`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        })
+        .catch(error => {
+            console.error(`Export Error (${format}):`, error);
+            alert(`Failed to export ${format} file. See console for details.`);
+        });
     }
-
-    async exportXMP() {
-        if (!this.contentImage || !this.resultImage) {
-            this.showError('没有可导出的内容');
-            return;
-        }
-
-        try {
-            const response = await fetch('/api/export_xmp', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    original_image: this.contentImage,
-                    stylized_image: this.resultImage
-                })
-            });
-
-            if (response.ok) {
-                // Trigger download
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = 'lutor_style_transfer.xmp';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                window.URL.revokeObjectURL(url);
-            } else {
-                const result = await response.json();
-                this.showError(result.error);
-            }
-        } catch (error) {
-            this.showError('导出 XMP 失败: ' + error.message);
-        }
-    }
-
-    isValidImageFile(file) {
-        const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/bmp', 'image/tiff'];
-        return validTypes.includes(file.type);
-    }
-
-    showError(message) {
-        // Simple alert for now - could be replaced with a nicer modal
-        alert('错误: ' + message);
-    }
-}
-
-// Initialize the app when the page loads
-document.addEventListener('DOMContentLoaded', () => {
-    new LUTorApp();
 });
