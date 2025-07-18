@@ -62,9 +62,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!contentImageB64 || !styleImageB64) {
             return;
         }
-        
-        showProcessingState(resultZone, true);
 
+        showProcessingState(resultZone, true);
+            
         const payload = {
             content_image: contentImageB64,
             style_image: styleImageB64,
@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         fetch('/api/style_transfer', {
-            method: 'POST',
+                method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         })
@@ -156,9 +156,9 @@ document.addEventListener('DOMContentLoaded', () => {
         showProcessingState(styleUploadZone, true);
         
         fetch('/api/generate_preset_style', {
-            method: 'POST',
+                method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ style_id: styleId })
+                body: JSON.stringify({ style_id: styleId })
         })
         .then(response => response.json())
         .then(data => {
@@ -257,7 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
         link.click();
         document.body.removeChild(link);
     }
-    
+
     function exportFile(format) {
         if (!contentImageB64 || !resultImageB64) return;
         
@@ -267,7 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         
         fetch(`/api/export_${format}`, {
-            method: 'POST',
+                method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(payload)
         })
@@ -276,14 +276,14 @@ document.addEventListener('DOMContentLoaded', () => {
             return response.blob();
         })
         .then(blob => {
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
             link.download = `lutor_style.${format === 'lut' ? 'cube' : 'xmp'}`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
         })
         .catch(error => {
             console.error(`Export Error (${format}):`, error);

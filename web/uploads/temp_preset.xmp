@@ -5,13 +5,13 @@
     xmlns:crs="http://ns.adobe.com/camera-raw-settings/1.0/">
    <crs:Version>13.0</crs:Version>
    <crs:ProcessVersion>11.0</crs:ProcessVersion>
-   <crs:Exposure2012>0.50</crs:Exposure2012>
-   <crs:Highlights2012>-12</crs:Highlights2012>
-   <crs:Shadows2012>7</crs:Shadows2012>
-   <crs:Vibrance>1</crs:Vibrance>
-   <crs:Saturation>0</crs:Saturation>
-   <crs:Temperature>7</crs:Temperature>
-   <crs:Tint>-0</crs:Tint>
+   <crs:Exposure2012>0.11</crs:Exposure2012>
+   <crs:Highlights2012>-30</crs:Highlights2012>
+   <crs:Shadows2012>36</crs:Shadows2012>
+   <crs:Vibrance>10</crs:Vibrance>
+   <crs:Saturation>8</crs:Saturation>
+   <crs:Temperature>761</crs:Temperature>
+   <crs:Tint>47</crs:Tint>
    <crs:HasSettings>True</crs:HasSettings>
   </rdf:Description>
  </rdf:RDF>

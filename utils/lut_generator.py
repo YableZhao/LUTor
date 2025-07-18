@@ -176,28 +176,62 @@ class LUTGenerator:
         if isinstance(stylized, Image.Image):
             stylized = np.array(stylized)
         
-        # Convert to LAB for better color analysis
-        original_lab = rgb_to_lab(original)
-        stylized_lab = rgb_to_lab(stylized)
+        # Ensure same size for comparison
+        if original.shape != stylized.shape:
+            h, w = original.shape[:2]
+            stylized = cv2.resize(stylized, (w, h))
         
-        # Calculate statistics
+        # Convert to float for calculations
+        original_f = original.astype(np.float32) / 255.0
+        stylized_f = stylized.astype(np.float32) / 255.0
+        
+        # Convert to LAB for better color analysis
+        original_lab = cv2.cvtColor(original_f, cv2.COLOR_RGB2LAB)
+        stylized_lab = cv2.cvtColor(stylized_f, cv2.COLOR_RGB2LAB)
+        
+        # Calculate comprehensive statistics
         orig_mean = np.mean(original_lab, axis=(0, 1))
         styl_mean = np.mean(stylized_lab, axis=(0, 1))
+        orig_std = np.std(original_lab, axis=(0, 1))
+        styl_std = np.std(stylized_lab, axis=(0, 1))
         
-        # Estimate adjustments
-        lightness_diff = (styl_mean[0] - orig_mean[0]) / 255.0
-        a_diff = (styl_mean[1] - orig_mean[1]) / 255.0
-        b_diff = (styl_mean[2] - orig_mean[2]) / 255.0
+        # Calculate luminance histogram changes
+        orig_lum = np.mean(original_f, axis=2)
+        styl_lum = np.mean(stylized_f, axis=2)
         
-        # Convert to Lightroom-style adjustments
+        # Analyze highlight/shadow changes
+        bright_mask = orig_lum > 0.7
+        shadow_mask = orig_lum < 0.3
+        
+        highlight_change = 0
+        shadow_change = 0
+        if np.any(bright_mask):
+            highlight_change = np.mean(styl_lum[bright_mask] - orig_lum[bright_mask])
+        if np.any(shadow_mask):
+            shadow_change = np.mean(styl_lum[shadow_mask] - orig_lum[shadow_mask])
+        
+        # Calculate overall brightness change
+        lightness_change = (styl_mean[0] - orig_mean[0]) / 100.0  # LAB L is 0-100
+        
+        # Calculate color temperature and tint changes
+        # In LAB: a* is green-red axis, b* is blue-yellow axis
+        a_change = styl_mean[1] - orig_mean[1]  # -128 to 127
+        b_change = styl_mean[2] - orig_mean[2]  # -128 to 127
+        
+        # Calculate saturation/vibrance changes
+        orig_chroma = np.sqrt(np.square(original_lab[:,:,1]) + np.square(original_lab[:,:,2]))
+        styl_chroma = np.sqrt(np.square(stylized_lab[:,:,1]) + np.square(stylized_lab[:,:,2]))
+        chroma_change = np.mean(styl_chroma - orig_chroma)
+        
+        # Map to Lightroom adjustments with more realistic scaling
         adjustments = {
-            'Exposure': np.clip(lightness_diff * 2.0, -2.0, 2.0),
-            'Highlights': np.clip(-lightness_diff * 50, -100, 100),
-            'Shadows': np.clip(lightness_diff * 30, -100, 100),
-            'Vibrance': np.clip(np.sqrt(a_diff**2 + b_diff**2) * 100, 0, 100),
-            'Saturation': np.clip(np.sqrt(a_diff**2 + b_diff**2) * 50, -100, 100),
-            'Temperature': np.clip(b_diff * 1000, -2000, 2000),
-            'Tint': np.clip(a_diff * 100, -100, 100),
+            'Exposure': np.clip(lightness_change * 0.5, -2.0, 2.0),
+            'Highlights': np.clip(highlight_change * -200, -100, 100),
+            'Shadows': np.clip(shadow_change * 200, -100, 100),
+            'Vibrance': np.clip(chroma_change * 2.0, -100, 100),
+            'Saturation': np.clip(chroma_change * 1.5, -100, 100),
+            'Temperature': np.clip(b_change * 50, -2000, 2000),  # Blue-yellow affects temp
+            'Tint': np.clip(a_change * 20, -100, 100),  # Green-red affects tint
         }
         
         return adjustments

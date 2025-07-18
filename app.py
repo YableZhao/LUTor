@@ -24,7 +24,7 @@ app = Flask(__name__, template_folder='web/templates', static_folder='web/static
 CORS(app)
 
 # --- CONFIGURATION ---
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+app.config['MAX_CONTENT_LENGTH'] = 32 * 1024 * 1024  # 16MB max file size
 app.config['UPLOAD_FOLDER'] = 'web/uploads'
 app.config['SECRET_KEY'] = 'lutor-secret-key-change-me' # It's good practice to change this
 
